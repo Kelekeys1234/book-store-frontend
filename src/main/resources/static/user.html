@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Bookstore</title>
+    <style>
+        .form-container {
+            max-width: 400px;
+            margin: auto;
+            padding: 1em;
+            background-color: #f9f9f9;
+            border: 1px solid #ccc;
+        }
+
+        .form-container h2 {
+            text-align: center;
+        }
+
+        .form-container form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-container form input {
+            margin-bottom: 1em;
+            padding: 0.5em;
+            border: 1px solid #ccc;
+        }
+
+        .form-container form button {
+            padding: 0.7em;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .form-container form button:hover {
+            background-color: #0056b3;
+        }
+
+        #loginResponseMessage,
+        #responseMessage,
+        #verifyResponseMessage {
+            margin-top: 1em;
+            text-align: center;
+            color: red;
+        }
+
+        .form-container {
+            width: 300px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-container h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .form-container input {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .form-container button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .form-container button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="signUpForm" class="form-container">
+        <h2>Sign Up</h2>
+        <form id="signUpForm">
+            <input type="text" id="firstName" placeholder="First Name" required>
+            <input type="text" id="middleName" placeholder="Middle Name">
+            <input type="text" id="lastName" placeholder="Last Name" required>
+            <input type="text" id="title" placeholder="Title" required>
+            <input type="email" id="email" placeholder="Email" required>
+            <input type="text" id="countryCode" placeholder="Country Code" required>
+            <input type="text" id="phoneNumber" placeholder="Phone Number" required>
+            <input type="password" id="password" placeholder="Password" required>
+            <button type="submit">Sign Up</button>
+        </form>
+        <div id="responseMessage"></div>
+    </div>
+
+    <div class="form-container">
+        <h2>Verify OTP</h2>
+        <form id="verifyOtpForm">
+            <input type="text" id="otpType" placeholder="Type (EMAIL or PHONE)" required>
+            <input type="text" id="otp" placeholder="OTP" required>
+            <input type="text" id="contact" placeholder="Contact" required>
+            <button type="submit">Verify OTP</button>
+        </form>
+        <div id="verifyResponseMessage"></div>
+    </div>
+
+    <div class="form-container">
+        <h2>Login</h2>
+        <form id="loginForm">
+            <input type="text" id="userName" placeholder="Username" required>
+            <input type="password" id="password" placeholder="Password" required>
+            <button type="submit">Login</button>
+        </form>
+        <div id="loginResponseMessage"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const signUpForm = document.getElementById('signUpForm');
+            const responseMessage = document.getElementById('responseMessage');
+            const verifyOtpForm = document.getElementById('verifyOtpForm');
+            const verifyResponseMessage = document.getElementById('verifyResponseMessage');
+            const loginForm = document.getElementById('loginForm');
+            const loginResponseMessage = document.getElementById('loginResponseMessage');
+
+            signUpForm.addEventListener('submit', function (event) {
+                event.preventDefault();
+
+                const firstName = document.getElementById('firstName').value;
+                const middleName = document.getElementById('middleName').value;
+                const lastName = document.getElementById('lastName').value;
+                const title = document.getElementById('title').value;
+                const email = document.getElementById('email').value;
+                const countryCode = document.getElementById('countryCode').value;
+                const phoneNumber = document.getElementById('phoneNumber').value;
+                const password = document.getElementById('password').value;
+
+                const signUpData = {
+                    first_name: firstName,
+                    middle_name: middleName,
+                    last_name: lastName,
+                    title: title,
+                    email_address: email,
+                    country_code: countryCode,
+                    phone_number: phoneNumber,
+                    password: password
+                };
+
+                fetch('http://localhost:8901/book-store/api/v1/user/signUp', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(signUpData)
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.text();
+                    })
+                    .then(data => {
+                        responseMessage.textContent = data;
+                        responseMessage.style.color = 'green';
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                        responseMessage.textContent = 'Error occurred while processing your request. Please try again later.';
+                        responseMessage.style.color = 'red';
+                    });
+            });
+
+            verifyOtpForm.addEventListener('submit', function (event) {
+                event.preventDefault();
+
+                const otpType = document.getElementById('otpType').value;
+                const otp = document.getElementById('otp').value;
+                const contact = document.getElementById('contact').value;
+
+                const verifyData = {
+                    type: otpType,
+                    otp: otp,
+                    contact: contact
+                };
+
+                fetch('http://localhost:8901/book-store/api/v1/user/verify_contact', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(verifyData)
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.text();
+                    })
+                    .then(data => {
+                        verifyResponseMessage.textContent = data;
+                        verifyResponseMessage.style.color = 'green';
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                        verifyResponseMessage.textContent = 'Error occurred while verifying OTP. Please try again later.';
+                        verifyResponseMessage.style.color = 'red';
+                    });
+            });
+
+            loginForm.addEventListener('submit', function (event) {
+                event.preventDefault();
+
+                const userName = document.getElementById('userName').value;
+                const password = document.getElementById('password').value;
+
+                const loginData = {
+                    user_name: userName,
+                    password: password
+                };
+
+                fetch('http://localhost:8901/book-store/api/v1/user/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(loginData)
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Login failed. Please check your credentials.');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Response data:', data); // Log the response data to inspect its structure
+
+                        // Check if data contains access_token
+                        if (data && data.data && data.data.access_token) {
+                            // Extract access token from the response data
+                            const accessToken = data.data.access_token;
+
+                            // Store the access token in localStorage for future use
+                            localStorage.setItem('accessToken', accessToken);
+
+                            // Redirect to the next page upon successful login
+                            window.location.href = 'book.html';
+                        } else {
+                            throw new Error('Access token not found in response data.');
+                        }
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                        loginResponseMessage.textContent = 'Error occurred while processing your request. Please try again later.';
+                    });
+            });
+        });
+    </script>
+</body>
+
+</html>

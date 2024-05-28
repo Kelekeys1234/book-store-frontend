@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Add Book</title>
+	<style>
+		.form-container {
+			max-width: 400px;
+			margin: auto;
+			padding: 1em;
+			background-color: #f9f9f9;
+			border: 1px solid #ccc;
+			border-radius: 5px;
+			box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+		}
+
+		.form-container h2 {
+			text-align: center;
+		}
+
+		.form-container form {
+			display: flex;
+			flex-direction: column;
+		}
+
+		.form-container form input,
+		.form-container form textarea {
+			margin-bottom: 1em;
+			padding: 0.5em;
+			border: 1px solid #ccc;
+			border-radius: 5px;
+		}
+
+		.form-container form button {
+			padding: 0.7em;
+			background-color: #007bff;
+			color: white;
+			border: none;
+			border-radius: 5px;
+			cursor: pointer;
+		}
+
+		.form-container form button:hover {
+			background-color: #0056b3;
+		}
+
+		#addBookResponseMessage {
+			margin-top: 1em;
+			text-align: center;
+		}
+
+		.form-container {
+			max-width: 400px;
+			margin: auto;
+			padding: 1em;
+			background-color: #f9f9f9;
+			border: 1px solid #ccc;
+			border-radius: 5px;
+			box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+		}
+
+		.book-list-container {
+			max-width: 600px;
+			margin: auto;
+			padding: 1em;
+			background-color: #f9f9f9;
+			border: 1px solid #ccc;
+			border-radius: 5px;
+			box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+		}
+
+		.book-item {
+			margin-bottom: 1em;
+			padding: 1em;
+			background-color: #fff;
+			border: 1px solid #ccc;
+			border-radius: 5px;
+			box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+		}
+
+		.book-item h3 {
+			margin-top: 0;
+		}
+
+		.book-item p {
+			margin: 0;
+		}
+
+		.form-container h2 {
+			text-align: center;
+		}
+
+		.form-container form {
+			display: flex;
+			flex-direction: column;
+		}
+
+		.form-container form input,
+		.form-container form textarea {
+			margin-bottom: 1em;
+			padding: 0.5em;
+			border: 1px solid #ccc;
+			border-radius: 5px;
+		}
+
+		.form-container form button {
+			padding: 0.7em;
+			background-color: #007bff;
+			color: white;
+			border: none;
+			border-radius: 5px;
+			cursor: pointer;
+		}
+
+		.form-container form button:hover {
+			background-color: #0056b3;
+		}
+
+		.response-message {
+			margin-top: 1em;
+			text-align: center;
+		}
+
+		.delete-form-container {
+			margin-top: 2em;
+			text-align: center;
+		}
+
+		.book-list-container {
+			display: grid;
+			grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+			grid-gap: 20px;
+			padding: 20px;
+		}
+
+		.book-card {
+			background-color: #f9f9f9;
+			border: 1px solid #ccc;
+			border-radius: 5px;
+			padding: 10px;
+		}
+
+		.book-title {
+			font-weight: bold;
+			margin-bottom: 5px;
+		}
+
+		.book-author {
+			color: #666;
+			margin-bottom: 5px;
+		}
+
+		.book-isbn {
+			color: #888;
+			font-size: 0.8em;
+			margin-bottom: 10px;
+		}
+
+		.book-availability {
+			font-style: italic;
+			color: green;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="form-container">
+		<h2>Add Book</h2>
+		<form id="addBookForm">
+			<input type="text" id="bookTitle" placeholder="Title" required>
+			<input type="text" id="bookAuthor" placeholder="Author" required>
+			<input type="text" id="bookIsbn" placeholder="ISBN" required>
+			<label>
+				<input type="checkbox" id="bookAvailable">
+				Available
+			</label>
+			<button type="submit">Add Book</button>
+		</form>
+		<div id="addBookResponseMessage"></div>
+	</div>
+
+	<div class="form-container">
+		<h2>Update Book</h2>
+		<form id="updateBookForm">
+			<input type="text" id="updateBookId" placeholder="Book ID" required>
+			<input type="text" id="updateTitle" placeholder="Title" required>
+			<input type="text" id="updateAuthor" placeholder="Author" required>
+			<input type="text" id="updateIsbn" placeholder="ISBN" required>
+			<label>
+				<input type="checkbox" id="updateAvailable">
+				Available
+			</label>
+			<button type="submit">Update Book</button>
+		</form>
+		<div id="updateBookResponseMessage"></div>
+	</div>
+
+	<div class="delete-form-container">
+		<h2>Delete Book</h2>
+		<form id="deleteBookForm">
+			<input type="text" id="deleteBookId" placeholder="Book ID" required>
+			<button type="submit">Delete Book</button>
+		</form>
+		<div id="deleteBookResponseMessage" class="response-message"></div>
+	</div>
+
+	<div class="book-list-container" id="bookList">
+		<!-- Book list will be displayed here -->
+	</div>
+
+
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+			const addBookForm = document.getElementById('addBookForm');
+			const addBookResponseMessage = document.getElementById('addBookResponseMessage');
+
+			// Retrieve the token from local storage
+			const token = localStorage.getItem('accessToken');
+
+			addBookForm.addEventListener('submit', function (event) {
+				event.preventDefault();
+
+				const bookTitle = document.getElementById('bookTitle').value;
+				const bookAuthor = document.getElementById('bookAuthor').value;
+				const bookIsbn = document.getElementById('bookIsbn').value;
+				const bookAvailable = document.getElementById('bookAvailable').checked;
+
+				const bookData = {
+					title: bookTitle,
+					author: bookAuthor,
+					isbn: bookIsbn,
+					available: bookAvailable
+				};
+
+				addBook(bookData);
+			});
+
+			function addBook(bookData) {
+				fetch('http://localhost:8901/book-store/api/v1/book', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						'Authorization': 'Bearer ' + token
+					},
+					body: JSON.stringify(bookData)
+				})
+					.then(handleResponse)
+					.then(displaySuccessMessage)
+					.catch(handleError);
+			}
+
+			function handleResponse(response) {
+				if (!response.ok) {
+					throw new Error('Failed to add the book. Please check the details.');
+				}
+				return response.json();
+			}
+
+			function displaySuccessMessage(data) {
+				addBookResponseMessage.textContent = 'Book added successfully with ID: ' + data.data.id;
+				addBookResponseMessage.style.color = 'green';
+			}
+
+			function handleError(error) {
+				console.error('Error:', error);
+				addBookResponseMessage.textContent = 'Error occurred while adding the book. Please try again later.';
+				addBookResponseMessage.style.color = 'red';
+			}
+		});
+
+
+		document.addEventListener('DOMContentLoaded', function () {
+			const updateBookForm = document.getElementById('updateBookForm');
+			const updateBookResponseMessage = document.getElementById('updateBookResponseMessage');
+
+			// Retrieve the token from local storage
+			const token = localStorage.getItem('accessToken');
+
+			updateBookForm.addEventListener('submit', function (event) {
+				event.preventDefault();
+
+				const bookId = document.getElementById('updateBookId').value;
+				const bookTitle = document.getElementById('updateTitle').value;
+				const bookAuthor = document.getElementById('updateAuthor').value;
+				const bookIsbn = document.getElementById('updateIsbn').value;
+				const bookAvailable = document.getElementById('updateAvailable').checked;
+
+				const bookData = {
+					id: bookId,
+					title: bookTitle,
+					author: bookAuthor,
+					isbn: bookIsbn,
+					available: bookAvailable
+				};
+
+				fetch(`http://localhost:8901/book-store/api/v1/book/${bookId}`, {
+					method: 'PUT',
+					headers: {
+						'Content-Type': 'application/json',
+						'Authorization': 'Bearer ' + token
+					},
+					body: JSON.stringify(bookData)
+				})
+					.then(response => {
+						if (!response.ok) {
+							throw new Error('Failed to update the book. Please check the details.');
+						}
+						return response.json();
+					})
+					.then(data => {
+						updateBookResponseMessage.textContent = 'Book updated successfully!';
+						updateBookResponseMessage.style.color = 'green';
+					})
+					.catch((error) => {
+						console.error('Error:', error);
+						updateBookResponseMessage.textContent = 'Error occurred while updating the book. Please try again later.';
+						updateBookResponseMessage.style.color = 'red';
+					});
+			});
+		});
+
+		document.addEventListener('DOMContentLoaded', function () {
+			const deleteBookResponseMessage = document.getElementById('deleteBookResponseMessage');
+
+			const deleteBook = (bookId) => {
+				const token = localStorage.getItem('accessToken');
+
+				fetch(`http://localhost:8901/book-store/api/v1/book/${bookId}`, {
+					method: 'DELETE',
+					headers: {
+						'Authorization': 'Bearer ' + token
+					}
+				})
+					.then(handleResponse)
+					.then(displaySuccessMessage)
+					.catch(handleError);
+			};
+
+			const deleteBookForm = document.getElementById('deleteBookForm');
+
+			deleteBookForm.addEventListener('submit', function (event) {
+				event.preventDefault();
+
+				const bookId = document.getElementById('deleteBookId').value;
+
+				deleteBook(bookId);
+			});
+
+			function handleResponse(response) {
+				if (!response.ok) {
+					throw new Error('Failed to delete the book.');
+				}
+				if (response.status === 204) {
+					// No content in the response, return null
+					return null;
+				}
+				return response.json();
+			}
+
+			function displaySuccessMessage(data) {
+				if (data === null) {
+					// No content, display a success message
+					deleteBookResponseMessage.textContent = 'Book deleted successfully!';
+					deleteBookResponseMessage.style.color = 'green';
+				} else {
+					// Handle unexpected response with content
+					console.error('Unexpected response with content:', data);
+					deleteBookResponseMessage.textContent = 'Unexpected response from server.';
+					deleteBookResponseMessage.style.color = 'red';
+				}
+			}
+
+			function handleError(error) {
+				console.error('Error:', error);
+				deleteBookResponseMessage.textContent = 'Error occurred while deleting the book. Please try again later.';
+				deleteBookResponseMessage.style.color = 'red';
+			}
+		});
+
+
+		document.addEventListener('DOMContentLoaded', function () {
+			const bookListContainer = document.getElementById('bookList');
+
+			fetch('http://localhost:8901/book-store/api/v1/book', {
+				method: 'GET',
+				headers: {
+					'Authorization': 'Bearer ' + localStorage.getItem('accessToken')
+				}
+			})
+				.then(handleResponse)
+				.then(displayBookList)
+				.catch(handleError);
+
+			function handleResponse(response) {
+				if (!response.ok) {
+					throw new Error('Failed to fetch book data.');
+				}
+				return response.json();
+			}
+
+			function displayBookList(data) {
+				console.log('API Response Data:', data);
+
+				if (!data || data.length === 0) {
+					console.error('Received empty or null data from the server.');
+					bookListContainer.innerHTML = '<p>No books available.</p>';
+					return;
+				}
+
+				const availableBooks = data.data.filter(book => book.available);
+
+				const bookListHTML = availableBooks.map(book => `
+            <div class="book-item">
+                <h3>Title: ${book.title}</h3>
+                <p>Id: ${book.id}</p>
+                <p>Author: ${book.author}</p>
+                <p>ISBN: ${book.isbn}</p>
+                <p>Available: ${book.available}</p>
+            </div>
+        `).join('');
+
+				bookListContainer.innerHTML = bookListHTML;
+			}
+
+			function handleError(error) {
+				console.error('Error:', error);
+				bookListContainer.innerHTML = '<p>Error occurred while fetching book data.</p>';
+			}
+		});
+
+
+	</script>
+</body>
+
+</html>
